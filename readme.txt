@@ -12,7 +12,7 @@ Add the player file to your web site and change the following line on the viewer
 https://YOURSITE.com/player/?id=YOURSTREAMNAME
 
 You can start streaming with OBS or the built in publisher.
-Codec VP8 on Mobile work.
+Codec VP8 on Mobile works.
 
 Please note there is limitation for WebGL on mobile which can create latency for the player.
 
