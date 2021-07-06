@@ -47,9 +47,9 @@ var manualRotation = quat.create(),
         }
       });
 
-      fullScreenButton.addEventListener('click', function() {
-        controls.fullscreen();
-      });
+      //fullScreenButton.addEventListener('click', function() {
+        //controls.fullscreen();
+      //});
 
       seekBar.addEventListener('change', function() {
         // Calculate the new time
