@@ -48,7 +48,7 @@ var manualRotation = quat.create(),
       });
 
       fullScreenButton.addEventListener('click', function() {
-        controls.fullscreen();
+        controls.Fullscreen();
       });
 
       seekBar.addEventListener('change', function() {
