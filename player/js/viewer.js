@@ -66,28 +66,12 @@
 
     console.log('connecting to: ', url + '?token=' + jwt);//token
     //connect with Websockets for handshake to media server.
-    let ws    = new WebSocket(url + '?token=' + jwt);
+    ws    = new WebSocket(url + '?token=' + jwt);
     ws.onopen = function () {
       //Connect to our media server via WebRTC
       console.log('ws::onopen');
-      //if this is supported
-      /* if (pc.addTransceiver) {
-          console.log('transceiver!');
-          //Create dummy stream
-          const stream = new MediaStream();
-          //Create all the receiver tracks
-          pc.addTransceiver("audio",{
-              direction       : "recvonly",
-                  streams         : [stream]
-          });
-          pc.addTransceiver("video",{
-              direction       : "recvonly",
-                  streams         : [stream]
-          });
-      } */
-
       //create a WebRTC offer to send to the media server
-    let offer = pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
+      let offer = pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
         .then(desc => {
           console.log('createOffer Success!');
           //support for stereo
@@ -98,24 +82,49 @@
           } catch(e){
             console.log('create offer stereo',offer);
           }
-            //create payload
-            let payload = {
-              type:    "cmd",
-              transId: 0,
-              name:    'view',
-              data:    data
-            }
-            console.log('send ', payload);
-            ws.send(JSON.stringify(payload));
-          })
-          .catch(e => {
-            console.log('setLocalDescription failed: ', e);
-          })
-      }).catch(e => {
-        console.log('createOffer Failed: ', e)
-      });
+          
+          //set local description and send offer to media server via ws.
+          pc.setLocalDescription(desc)
+            .then(() => {
+              console.log('setLocalDescription Success!');
+              //set required information for media server.
+              let data    = {
+                streamId: accountId,//Millicast accountId
+                sdp:      desc.sdp
+              }
+              //create payload
+              let payload = {
+                type:    "cmd",
+                transId: 0,
+                name:    'view',
+                data:    data
+              }
+              console.log('send ', payload);
+              ws.send(JSON.stringify(payload));
+            })
+            .catch(e => {
+              console.log('setLocalDescription failed: ', e);
+              showMsg(e.status+': '+e.data.message);
+            })
+        }).catch(e => {
+          console.log('createOffer Failed: ', e)
+          showMsg(e.status+': '+e.data.message);
+        });
     }
-
+    ws.onclose = function () {
+      console.log('WS onclose ',reconn);
+      if(reconn){
+        ws = null;
+        if(!pc){
+          setTimeout(connect(),700);
+        } else {
+          console.log('close PC ',pc);
+          pc.close();
+          pc = null;
+          setTimeout(connect(),700);
+        }
+      }
+    }
     ws.addEventListener('message', evt => {
       console.log('ws::message', evt);
       let msg = JSON.parse(evt.data);
